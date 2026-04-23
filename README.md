@@ -86,4 +86,4 @@ git checkout entity-version
 
 ## ✨ Author
 
-* GitHub: (여기에 본인 깃헙 링크)
+* GitHub: https://github.com/dedunkel
