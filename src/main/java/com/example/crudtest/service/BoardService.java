@@ -1,5 +1,8 @@
 package com.example.crudtest.service;
 
+import com.example.crudtest.dto.BoardResponseDto;
+import com.example.crudtest.dto.BoardRequestDto;
+import com.example.crudtest.dto.PasswordUpdateDto;
 import com.example.crudtest.entity.Board;
 import com.example.crudtest.repository.BoardRepository;
 import org.springframework.stereotype.Service;
@@ -15,37 +18,89 @@ public class BoardService {
         this.boardRepository = boardRepository;
     }
 
+    public Board toEntity(BoardRequestDto dto) {
+        Board board = new Board();
+        board.setTitle(dto.getTitle());
+        board.setContent(dto.getContent());
+        board.setWriter(dto.getWriter());
+        board.setPassword(dto.getPassword());
+        return board;
+    }
+
+    public BoardResponseDto toDto(Board board) {
+        return new BoardResponseDto(
+                board.getId(),
+                board.getTitle(),
+                board.getContent(),
+                board.getWriter()
+        );
+    }
+
     // CREATE (생성)
-    public Board createBoard(Board board) {
-        return boardRepository.save(board);
+    public BoardResponseDto createBoard(BoardRequestDto boardDto) {
+        Board board = toEntity(boardDto);
+        Board createdBoard = boardRepository.save(board);
+        return toDto(createdBoard);
     }
 
     // READ (조회)
-    public List<Board> gotAllBoards() {
-        return boardRepository.findAll();
+    public List<BoardResponseDto> gotAllBoards() {
+        return boardRepository.findAll()
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    public Board gotBoardById(Long id) {
-        return boardRepository.findById(id).orElse(null);
+    public BoardResponseDto gotBoardById(Long id) {
+        return boardRepository.findById(id)
+                .map(this::toDto)
+                .orElse(null);
     }
 
-    public List<Board> gotBoardByWriter(String writer) {
-        return boardRepository.findByWriter(writer);
+    public List<BoardResponseDto> gotBoardByWriter(String writer) {
+        return boardRepository.findByWriter(writer)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
-    public List<Board> searchBoards(String keyword) {
-        return boardRepository.findByTitleContaining(keyword);
+    public List<BoardResponseDto> searchBoards(String keyword) {
+        return boardRepository.findByTitleContaining(keyword)
+                .stream()
+                .map(this::toDto)
+                .toList();
     }
 
     // UPDATE (수정)
-    public Board updateBoard(Long id, Board newboard) {
-        Board existingBoard = gotBoardById(id);
-        existingBoard.setTitle(newboard.getTitle());
-        existingBoard.setContent(newboard.getContent());
-        existingBoard.setWriter(newboard.getWriter());
-        existingBoard.setPassword(newboard.getPassword());
+    public BoardResponseDto updateBoard(Long id, BoardResponseDto newboardDto) {
+        Board existingBoard = boardRepository.findById(id).orElse(null);
 
-        return boardRepository.save(existingBoard);
+        if (existingBoard == null) {
+            return null;
+        }
+        existingBoard.setTitle(newboardDto.getTitle());
+        existingBoard.setContent(newboardDto.getContent());
+        existingBoard.setWriter(newboardDto.getWriter());
+        // existingBoard.setPassword(newboardDto.getPassword());
+        // 비밀번호 변경은 보안 문제 때문에 따로 구현 필요
+        Board updatedBoard = boardRepository.save(existingBoard);
+
+        return toDto(updatedBoard);
+    }
+
+    // PasswordUpdate (비밀번호 수정)
+    public void updatePassword(Long id, PasswordUpdateDto passwordUpdateDto) {
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+
+        // 기존 비밀번호 확인
+        if (!board.getPassword().equals(passwordUpdateDto.getCurrentPassword())) {
+            throw new RuntimeException("비밀번호 불일치");
+        }
+
+        // 새 비밀번호로 변경
+        board.setPassword(passwordUpdateDto.getNewPassword());
+        boardRepository.save(board);
     }
 
     // DELETE (삭제)
@@ -58,4 +113,26 @@ public class BoardService {
         }
         return false;
     }
+
+    // Optioanl 사용
+    /*
+    public boolean deleteBoard(Long id) {
+        return boardRepository.findById(id)
+                .map(board -> {
+                    boardRepository.delete(board);
+                    return true;
+                })
+                .orElse(false);
+    }
+    */
+
+    // Boolean 안 쓰고 예외 처리
+    /*
+    public void deleteBoard(Long id) {
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+
+        boardRepository.delete(board);
+    }
+    */
 }

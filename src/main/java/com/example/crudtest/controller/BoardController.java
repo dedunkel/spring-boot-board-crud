@@ -1,5 +1,8 @@
 package com.example.crudtest.controller;
 
+import com.example.crudtest.dto.BoardRequestDto;
+import com.example.crudtest.dto.BoardResponseDto;
+import com.example.crudtest.dto.PasswordUpdateDto;
 import com.example.crudtest.entity.Board;
 import com.example.crudtest.service.BoardService;
 import org.springframework.http.ResponseEntity;
@@ -21,27 +24,27 @@ public class BoardController {
 
     // CREATE (생성)
     @PostMapping
-    public ResponseEntity<Board> createBoard(@RequestBody Board board) {
-        Board createdBoard = boardService.createBoard(board);
+    public ResponseEntity<BoardResponseDto> createBoard(@RequestBody BoardRequestDto boardDto) {
+        BoardResponseDto createdBoard = boardService.createBoard(boardDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdBoard);
     }
 
     // READ (조회)
     @GetMapping
-    public ResponseEntity<List<Board>> getAllBoards() {
-        List<Board> boards = boardService.gotAllBoards();
+    public ResponseEntity<List<BoardResponseDto>> getAllBoards() {
+        List<BoardResponseDto> boards = boardService.gotAllBoards();
         return ResponseEntity.ok(boards);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Board> getBoardById(@PathVariable Long id) {
-        Board board = boardService.gotBoardById(id);
+    public ResponseEntity<BoardResponseDto> getBoardById(@PathVariable Long id) {
+        BoardResponseDto board = boardService.gotBoardById(id);
         return ResponseEntity.ok(board);
     }
 
     @GetMapping("/writer/{writer}")
-    public ResponseEntity<List<Board>> gotBoardByWriter(@PathVariable String writer) {
-        List<Board> boards = boardService.gotBoardByWriter(writer);
+    public ResponseEntity<List<BoardResponseDto>> gotBoardByWriter(@PathVariable String writer) {
+        List<BoardResponseDto> boards = boardService.gotBoardByWriter(writer);
         return ResponseEntity.ok(boards);
     }
 
@@ -56,17 +59,16 @@ public class BoardController {
 
     // boards/search?keyword=스프링
     @GetMapping("/search")
-    public ResponseEntity<List<Board>> searchBoards(@RequestParam String search) {
-        List<Board> boards = boardService.searchBoards(search);
+    public ResponseEntity<List<BoardResponseDto>> searchBoards(@RequestParam String search) {
+        List<BoardResponseDto> boards = boardService.searchBoards(search);
         return ResponseEntity.ok(boards);
     }
 
     // UPDATE (수정)
     @PutMapping("/{id}")
-    public ResponseEntity<Board> updateBoard(@PathVariable Long id, @RequestBody Board board) {
-        Board existingBoard = boardService.gotBoardById(id);
-        if (existingBoard != null) {
-            Board updatedBoard = boardService.updateBoard(id, board);
+    public ResponseEntity<BoardResponseDto> updateBoard(@PathVariable Long id, @RequestBody BoardResponseDto boardDto) {
+        BoardResponseDto updatedBoard = boardService.updateBoard(id, boardDto);
+        if (updatedBoard != null) {
             return ResponseEntity.ok(updatedBoard);
         }
         else {
@@ -74,9 +76,16 @@ public class BoardController {
         }
     }
 
+    // PasswordUpdate (비밀번호 수정)
+    @PatchMapping("/{id}/password")
+    public ResponseEntity<Void> updatePassword(@PathVariable Long id, @RequestBody PasswordUpdateDto passwordUpdateDto) {
+        boardService.updatePassword(id, passwordUpdateDto);
+        return ResponseEntity.noContent().build();
+    }
+
     // DELETE (삭제)
     @DeleteMapping("/{id}")
-    public ResponseEntity<Board> deleteBoard(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteBoard(@PathVariable Long id) {
         boolean deleted = boardService.deleteBoard(id);
 
         if(deleted) {
@@ -86,4 +95,13 @@ public class BoardController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    // Boolean 안 쓰고 예외 처리
+    /*
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteBoard(@PathVariable Long id) {
+        boardService.deleteBoard(id);
+        return ResponseEntity.noContent().build();
+    }
+    */
 }
