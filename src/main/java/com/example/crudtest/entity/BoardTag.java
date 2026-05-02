@@ -5,20 +5,21 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
-public class Tag {
+public class BoardTag {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "board_id")
+    private Board board;
 
-    @OneToMany(mappedBy = "tag")
-    private List<BoardTag> boardTags;
+    @ManyToOne
+    @JoinColumn(name = "tag_id")
+    private Tag tag;
 }

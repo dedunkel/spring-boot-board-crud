@@ -16,16 +16,22 @@ public class TagService {
     private final TagRepository tagRepository;
 
     // 태그 추가
-    public Board addTag(Long boardId, String tagName){
+    public void addTag(Long boardId, String tagName) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new RuntimeException("게시글 없음"));
+
         Tag tag = tagRepository.findByName(tagName)
-                .orElseGet(() -> tagRepository.save(new Tag()));
+                .orElseGet(() -> {
+                    Tag newTag = new Tag();
+                    newTag.setName(tagName);
+                    return tagRepository.save(newTag);
+                });
 
-        tag.setName(tagName);
+        BoardTag boardTag = new BoardTag();
+        boardTag.setBoard(board);
+        boardTag.setTag(tag);
 
-        board.getTags().add(tag);
-        return boardRepository.save(board);
+        boardTagRepository.save(boardTag);
     }
 
     // 태그 조회

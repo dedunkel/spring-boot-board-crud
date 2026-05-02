@@ -37,11 +37,6 @@ public class Board {
     private List<Comment> comments;
 
     // M:N (Tag)
-    @ManyToMany
-    @JoinTable(
-            name = "board_tag",
-            joinColumns = @JoinColumn(name = "board_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
-    private List<Tag> tags;
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
+    private List<BoardTag> boardTags;
 }
