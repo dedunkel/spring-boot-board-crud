@@ -74,9 +74,6 @@ Spring Boot와 JPA를 활용한 게시판 CRUD 프로젝트입니다.
 * Board ↔ Comment → **1:N**
 * Board ↔ Tag → **N:M**
 
-👉 Board ↔ Tag는 직접적인 N:M 관계가 아니라
-**BoardTag를 통해 1:N + 1:N 구조로 분리하여 구현**
-
 ---
 
 ## 💡 핵심 설계 포인트
