@@ -1,45 +1,156 @@
 # 📌 Spring Boot Board CRUD (Entity Version)
 
-Spring Boot를 사용한 게시판 CRUD 프로젝트입니다.
-Entity를 직접 사용하여 기본적인 CRUD 흐름을 구현한 버전입니다.
+Spring Boot와 JPA를 활용한 게시판 CRUD 프로젝트입니다.
+본 버전은 **Entity를 직접 사용하는 구조**로, JPA 연관관계 학습을 목표로 합니다.
 
 ---
 
-## 🚀 특징
+## 🚀 주요 특징
 
-* Entity를 그대로 Request/Response에 사용
-* Spring Data JPA 기반 CRUD 구현
-* RESTful API 설계 기초 학습
+* Entity 기반 CRUD 구현
+* JPA 연관관계 매핑 학습
+* 다양한 관계 구조 적용
+
+  * 1:1
+  * 1:N
+  * N:M → 중간 테이블로 분리
 
 ---
 
-## 🛠️ Tech Stack
+## 🧩 Entity 구성
 
-* Java
-* Spring Boot
-* Spring Data JPA
-* H2 Database
-* Gradle
+### 🔹 Board (게시글)
+
+* id (PK)
+* title
+* content
+* writer
+* password
+
+---
+
+### 🔹 BoardDetail (게시글 상세)
+
+* id (PK)
+* viewCount
+* likeCount
+* board_id (FK)
+
+👉 Board와 **1:1 관계**
+
+---
+
+### 🔹 Comment (댓글)
+
+* id (PK)
+* content
+* writer
+* board_id (FK)
+
+👉 Board와 **1:N 관계**
+
+---
+
+### 🔹 Tag (태그)
+
+* id (PK)
+* name
+
+---
+
+### 🔹 BoardTag (중간 테이블)
+
+* id (PK)
+* board_id (FK)
+* tag_id (FK)
+
+👉 Board와 Tag의 관계를 연결하는 **중간 엔티티**
+
+---
+
+## 🔗 관계 구조
+
+* Board ↔ BoardDetail → **1:1**
+* Board ↔ Comment → **1:N**
+* Board ↔ Tag → **N:M**
+
+---
+
+## 💡 핵심 설계 포인트
+
+### ✅ 1. 연관관계 매핑
+
+* `@OneToOne`
+* `@OneToMany`
+* `@ManyToOne`
+
+---
+
+### ✅ 2. N:M 관계 해결
+
+기존:
+
+```text id="a1xk2p"
+Board ↔ Tag (N:M)
+```
+
+변경:
+
+```text id="p9qk2z"
+Board → BoardTag → Tag
+```
+
+👉 중간 엔티티를 사용하여
+**확장성과 유지보수성 향상**
+
+---
+
+### ✅ 3. 계층 구조
+
+```text id="qv0e8l"
+Controller → Service → Repository → Entity
+```
 
 ---
 
 ## 📂 API 구조
 
-| 기능     | Method | URL                                 |
-| ------ | ------ | ----------------------------------- |
-| 생성     | POST   | `/api/boards`                       |
-| 전체 조회  | GET    | `/api/boards`                       |
-| 단건 조회  | GET    | `/api/boards/{id}`                  |
-| 작성자 조회 | GET    | `/api/boards/writer/{writer}`       |
-| 검색     | GET    | `/api/boards/search?search=keyword` |
-| 수정     | PUT    | `/api/boards/{id}`                  |
-| 삭제     | DELETE | `/api/boards/{id}`                  |
+### 📌 Board
+
+| 기능    | Method | URL                |
+| ----- | ------ | ------------------ |
+| 생성    | POST   | `/api/boards`      |
+| 전체 조회 | GET    | `/api/boards`      |
+| 단건 조회 | GET    | `/api/boards/{id}` |
+| 수정    | PUT    | `/api/boards/{id}` |
+| 삭제    | DELETE | `/api/boards/{id}` |
 
 ---
 
-## 📥 Example Request (POST)
+### 📌 Comment
 
-```json
+| 기능 | Method | URL                       |
+| -- | ------ | ------------------------- |
+| 생성 | POST   | `/api/comments/{boardId}` |
+| 조회 | GET    | `/api/comments/{boardId}` |
+
+---
+
+### 📌 Tag
+
+| 기능         | Method | URL                            |
+| ---------- | ------ | ------------------------------ |
+| 태그 추가      | POST   | `/api/tags/{boardId}?name=태그명` |
+| 전체 태그 조회   | GET    | `/api/tags`                    |
+| 게시글별 태그 조회 | GET    | `/api/tags/{boardId}`          |
+
+---
+
+## 📥 Example Request
+
+### 🔹 게시글 생성
+
+```json id="b8l2kq"
 {
   "title": "게시글 제목",
   "content": "게시글 내용",
@@ -52,35 +163,25 @@ Entity를 직접 사용하여 기본적인 CRUD 흐름을 구현한 버전입니
 
 ## ▶️ 실행 방법
 
-```bash
+```bash id="k7v3mz"
 ./gradlew bootRun
 ```
 
 ---
 
-## 💡 학습 포인트
+## 🌱 학습 포인트
 
-* Spring Boot 기본 구조 이해
-* Controller → Service → Repository 흐름
-* JPA를 활용한 데이터 처리
-
----
-
-## ⚠️ 한계
-
-* Entity가 그대로 외부에 노출됨
-* 요청/응답 구조 분리가 없음
-* 유지보수 및 확장성에 한계 존재
-
-👉 이러한 문제를 개선한 버전은 `main` 브랜치(DTO 적용)에서 확인할 수 있습니다.
+* JPA 연관관계 설계 이해
+* 중간 테이블을 활용한 N:M 관계 처리
+* Entity 기반 데이터 흐름 이해
+* RESTful API 설계 경험
 
 ---
 
-## 📎 브랜치 이동
+## 🔀 브랜치
 
-```bash
-git checkout entity-version
-```
+* `entity-version` : Entity 직접 사용 버전
+* `main` : DTO 적용 버전
 
 ---
 
