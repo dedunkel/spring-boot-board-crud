@@ -6,6 +6,7 @@ import com.example.crudtest.dto.PasswordUpdateDto;
 import com.example.crudtest.entity.Board;
 import com.example.crudtest.repository.BoardRepository;
 import org.springframework.stereotype.Service;
+import com.example.crudtest.exception.custom.BoardNotFoundException;
 
 import java.util.List;
 
@@ -54,7 +55,10 @@ public class BoardService {
     public BoardResponseDto gotBoardById(Long id) {
         return boardRepository.findById(id)
                 .map(this::toDto)
-                .orElse(null);
+                .orElseThrow(() ->
+                new BoardNotFoundException(
+                        "게시글이 존재하지 않습니다."
+                ));
     }
 
     public List<BoardResponseDto> gotBoardByWriter(String writer) {
@@ -72,12 +76,13 @@ public class BoardService {
     }
 
     // UPDATE (수정)
-    public BoardResponseDto updateBoard(Long id, BoardResponseDto newboardDto) {
-        Board existingBoard = boardRepository.findById(id).orElse(null);
+    public BoardResponseDto updateBoard(Long id, BoardRequestDto newboardDto) {
+        Board existingBoard = boardRepository.findById(id)
+                .orElseThrow(() ->
+                        new BoardNotFoundException(
+                                "게시글이 존재하지 않습니다."
+                        ));
 
-        if (existingBoard == null) {
-            return null;
-        }
         existingBoard.setTitle(newboardDto.getTitle());
         existingBoard.setContent(newboardDto.getContent());
         existingBoard.setWriter(newboardDto.getWriter());
@@ -91,7 +96,10 @@ public class BoardService {
     // PasswordUpdate (비밀번호 수정)
     public void updatePassword(Long id, PasswordUpdateDto passwordUpdateDto) {
         Board board = boardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("게시글 없음"));
+                .orElseThrow(() ->
+                        new BoardNotFoundException(
+                                "게시글이 존재하지 않습니다."
+                        ));
 
         // 기존 비밀번호 확인
         if (!board.getPassword().equals(passwordUpdateDto.getCurrentPassword())) {
